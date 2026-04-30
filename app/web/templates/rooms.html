@@ -244,6 +244,7 @@
                                             <td>
                                                 <button class="btn btn-sm" style="background: #3b82f6;" onclick="editRoom('${room.room_id}')">编辑</button>
                                                 <button class="btn btn-sm" onclick="viewDanmu('${room.room_id}')">查看弹幕</button>
+                                                <button class="btn btn-sm" style="background: #f59e0b;" onclick="openLiveRoom('${room.room_id}')">直播间</button>
                                                 ${room.status === 1 ? `<button class="btn btn-sm btn-danger" onclick="stopListening('${room.room_id}')">停止监听</button>` : `<button class="btn btn-sm btn-success" onclick="startListening('${room.room_id}')">开始监听</button>`}
                                                 <button class="btn btn-sm btn-danger" onclick="confirmDelete('${room.room_id}')">删除</button>
                                             </td>
@@ -369,6 +370,10 @@
         
         function viewDanmu(roomId) {
             window.location.href = `/danmus/${roomId}`;
+        }
+        
+        function openLiveRoom(roomId) {
+            window.open(`https://live.douyin.com/${roomId}`, '_blank');
         }
         
         function confirmDelete(roomId) {

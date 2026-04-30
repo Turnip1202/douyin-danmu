@@ -157,10 +157,23 @@ class DanmuService:
     def _listen(self):
         """WebSocket监听循环"""
         reconnect_count = 0
-        max_reconnect = 10
+        max_reconnect = 20
+        last_refresh_time = 0
+        refresh_interval = 300  # 每5分钟刷新一次房间信息和签名
         
         while self.running and reconnect_count < max_reconnect:
             try:
+                # 定期刷新房间信息和签名（防止过期）
+                current_time = time.time()
+                if current_time - last_refresh_time > refresh_interval:
+                    self.logger.info("刷新房间信息和签名...")
+                    short_id, room_id, sub_room_id, user_unique_id, ttwid = self._get_room_info(self.short_room_id)
+                    self.room_id = room_id
+                    self.sub_room_id = sub_room_id
+                    self.user_unique_id = user_unique_id
+                    self.ttwid = ttwid
+                    last_refresh_time = current_time
+                
                 # 获取签名（使用实际的长ID）
                 signature = self.signature_service.generate_signature(
                     self.room_id,
@@ -196,16 +209,18 @@ class DanmuService:
                     on_close=self._on_close
                 )
                 
-                # 运行WebSocket
+                # 运行WebSocket（优化心跳参数）
                 self.ws.run_forever(
                     sslopt={"cert_reqs": ssl.CERT_NONE},
-                    ping_interval=20,
-                    ping_timeout=10
+                    ping_interval=30,      # 每30秒发送心跳
+                    ping_timeout=10,       # 10秒无响应断开
+                    ping_payload="ping"    # 添加心跳内容
                 )
                 
             except Exception as e:
                 reconnect_count += 1
-                wait_time = min(2 ** reconnect_count, 30)
+                # 指数退避，首次快速重试，之后逐渐增加间隔
+                wait_time = min(2 ** (reconnect_count - 1), 60)
                 self.logger.error(f"监听异常 ({reconnect_count}/{max_reconnect}): {e}")
                 self.logger.info(f"等待 {wait_time} 秒后重连...")
                 time.sleep(wait_time)
