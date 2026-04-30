@@ -1,5 +1,3 @@
-<div align="center">
-
 # 🎬 抖音弹幕监控系统
 
 ![Python](https://img.shields.io/badge/Python-3.8+-blue.svg)
@@ -7,7 +5,7 @@
 ![WebSocket](https://img.shields.io/badge/WebSocket-Support-orange.svg)
 ![License](https://img.shields.io/badge/License-MIT-yellow.svg)
 
-> 一个功能强大的抖音直播弹幕监控系统，支持实时监听、数据统计和可视化展示
+一个功能强大的抖音直播弹幕监控系统，支持实时监听、数据统计和可视化展示。
 
 ---
 
@@ -28,10 +26,8 @@
 
 ### 环境要求
 
-```bash
-Python >= 3.8
-Node.js >= 14.0
-```
+- Python >= 3.8
+- Node.js >= 14.0
 
 ### 安装依赖
 
@@ -56,7 +52,6 @@ pip install -r requirements.txt
 ### 启动服务
 
 ```bash
-# 运行服务
 python run.py
 ```
 
@@ -64,42 +59,27 @@ python run.py
 
 ---
 
-## 📷 界面预览
-
-### 首页仪表盘
-![首页预览](https://via.placeholder.com/800x400?text=首页仪表盘预览)
-
-### 弹幕实时监控
-![弹幕监控](https://via.placeholder.com/800x400?text=弹幕实时监控预览)
-
-### 统计分析
-![统计分析](https://via.placeholder.com/800x400?text=统计分析预览)
-
----
-
 ## 📁 项目结构
 
 ```
 douyin-danmu/
-├── app/                    # 应用主目录
-│   ├── api/                # REST API 接口
-│   │   └── v1/             # API 版本 1
-│   │       ├── room_api.py      # 房间管理接口
-│   │       ├── danmu_api.py     # 弹幕数据接口
-│   │       └── stats_api.py     # 统计分析接口
-│   ├── services/           # 业务逻辑层
-│   │   ├── danmu_service.py     # 弹幕监听服务
-│   │   ├── room_info_parser.py  # 房间信息解析器
-│   │   └── signature_service.py # 签名服务
-│   ├── repositories/       # 数据访问层
-│   ├── web/                # Web 前端
-│   │   └── templates/      # HTML 模板
-│   ├── config/             # 配置文件
-│   └── utils/              # 工具函数
-├── data/                   # 数据库文件
-├── tests/                  # 测试文件
-├── requirements.txt        # 依赖清单
-└── run.py                  # 启动脚本
+├── app/
+│   ├── api/v1/           # REST API 接口
+│   │   ├── room_api.py   # 房间管理
+│   │   ├── danmu_api.py  # 弹幕数据
+│   │   └── stats_api.py  # 统计分析
+│   ├── services/         # 业务逻辑层
+│   │   ├── danmu_service.py
+│   │   ├── room_info_parser.py
+│   │   └── signature_service.py
+│   ├── repositories/     # 数据访问层
+│   ├── web/templates/    # Web 前端模板
+│   ├── config/           # 配置文件
+│   └── utils/            # 工具函数
+├── data/                 # 数据库文件
+├── tests/                # 测试文件
+├── requirements.txt      # 依赖清单
+└── run.py                # 启动脚本
 ```
 
 ---
@@ -108,12 +88,12 @@ douyin-danmu/
 
 | 分类 | 技术 | 说明 |
 |:---:|------|------|
-| **后端框架** | Flask | 轻量级 Python Web 框架 |
-| **数据库** | SQLite | 嵌入式数据库，无需额外部署 |
-| **WebSocket** | websocket-client | WebSocket 客户端库 |
-| **签名生成** | PyExecJS + Node.js | 执行 JavaScript 签名算法 |
-| **页面解析** | Playwright | 动态页面渲染解析 |
-| **协议解析** | Protocol Buffers | 抖音数据协议解析 |
+| 后端框架 | Flask | 轻量级 Python Web 框架 |
+| 数据库 | SQLite | 嵌入式数据库 |
+| WebSocket | websocket-client | WebSocket 客户端库 |
+| 签名生成 | PyExecJS + Node.js | JavaScript 签名算法 |
+| 页面解析 | Playwright | 动态页面渲染解析 |
+| 协议解析 | Protocol Buffers | 抖音数据协议解析 |
 
 ---
 
@@ -167,7 +147,7 @@ curl -X POST http://localhost:5000/api/v1/rooms/966861199494/start \
 ### 获取弹幕列表
 
 ```bash
-curl http://localhost:5000/api/v1/danmus/966861199494?page=1&limit=50
+curl "http://localhost:5000/api/v1/danmus/966861199494?page=1&limit=50"
 ```
 
 ---
@@ -194,16 +174,20 @@ curl http://localhost:5000/api/v1/danmus/966861199494?page=1&limit=50
 
 ## 🐛 常见问题
 
-### Q: 运行时提示 "ModuleNotFoundError"
+**Q: 运行时提示 "ModuleNotFoundError"**
+
 **A:** 请确保已激活虚拟环境并安装依赖
 
-### Q: 签名生成失败
+**Q: 签名生成失败**
+
 **A:** 请确保已安装 Node.js，并且版本 ≥ 14.0
 
-### Q: WebSocket 连接失败（400 Bad Request）
+**Q: WebSocket 连接失败（400 Bad Request）**
+
 **A:** 可能是直播间 ID 不正确或签名过期，请检查直播间 URL
 
-### Q: 房间信息获取失败
+**Q: 房间信息获取失败**
+
 **A:** 请确保已安装 Playwright：`pip install playwright && playwright install chromium`
 
 ---
@@ -228,12 +212,4 @@ MIT License
 
 ---
 
-## 📧 联系方式
-
-如有问题或建议，请提交 Issue 或发送邮件。
-
----
-
 ⭐ 如果这个项目对你有帮助，请给个 Star！
-
-</div>
