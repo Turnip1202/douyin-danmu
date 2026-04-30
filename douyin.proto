@@ -1,0 +1,120 @@
+syntax = "proto3";
+
+package douyin;
+
+message PushFrame {
+    uint64 SeqID = 1;
+    uint64 LogID = 2;
+    int32 service = 3;
+    int32 method = 4;
+    string payload_encoding = 6;
+    string payload_type = 7;
+    bytes payload = 8;
+    string LodIDNew = 9;
+}
+
+
+
+// 消息结构定义
+message Message {
+  // 方法 - 字符串类型
+  string method = 1;
+
+  // 负载数据 - 字节数组类型
+  bytes payload = 2;
+
+  // 消息ID - 64位整型（字符串形式）
+  int64 msg_id = 3;
+
+  // 消息类型 - 32位整型
+  int32 msg_type = 4;
+
+  // 偏移量 - 64位整型（字符串形式）
+  int64 offset = 5;
+
+  // 是否需要WRDS存储 - 布尔类型
+  bool need_wrds_store = 6;
+
+  // WRDS版本 - 64位整型（字符串形式）
+  int64 wrds_version = 7;
+
+  // WRDS子键 - 字符串类型
+  string wrds_sub_key = 8;
+
+  // 消息额外信息 - 字符串到字符串的映射
+  map<string, string> message_extra = 9;
+
+  // 租户ID - 字符串类型
+  string tenant_id = 10;
+}
+
+
+// 直播间消息响应结构
+message Response {
+  // 消息列表 - 嵌套消息类型，重复字段
+  repeated Message messages = 1;
+
+  // 游标 - 字符串类型
+  string cursor = 2;
+
+  // 获取间隔 - 64位整型
+  int64 fetch_interval = 3;
+
+  // 当前时间戳 - 64位整型
+  int64 now = 4;
+
+  // 内部扩展字段 - 字符串类型
+  string internal_ext = 5;
+
+  // 获取类型 - 32位整型
+  int32 fetch_type = 6;
+
+  // 预留字段7 - 用于未来扩展
+  map<string, string> route_params = 7;
+
+  // 心跳持续时间 - 64位整型
+  int64 heartbeat_duration = 8;
+
+  // 是否需要确认 - 布尔类型
+  bool need_ack = 9;
+
+  // 推送服务器地址 - 字符串类型
+  string push_server = 10;
+
+  // 直播游标 - 字符串类型
+  string live_cursor = 11;
+
+  // 历史记录是否结束 - 布尔类型
+  bool history_no_more = 12;
+
+  // 代理服务器地址 - 字符串类型
+  string proxy_server = 13;
+
+  // V2推送服务器地址 - 字符串类型
+  string push_server_v2 = 14;
+}
+
+message ChatMessage {
+    User user = 2;
+    string content = 3;
+    bool visibleToSender = 4;
+}
+message User {
+    uint64 id = 1;
+    uint64 shortId = 2;
+    string nickName = 3;
+    uint32 gender = 4;
+    string Signature = 5;
+    uint32 Level = 6;
+    uint64 Birthday = 7;
+    string Telephone = 8;
+    string city = 14;
+}
+
+message LikeMessage{
+    uint64 count = 2;
+    uint64 total = 3;
+    User user = 5;
+    string scene = 10;
+}
+

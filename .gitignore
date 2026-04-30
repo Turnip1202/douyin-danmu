@@ -1,0 +1,50 @@
+# Python 虚拟环境
+venv/
+.env/
+
+# Python 编译产物
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# 日志文件
+*.log
+debug.log
+output.log
+
+# 临时文件
+_temp_*.js
+*.tmp
+
+# 编辑器配置
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# 操作系统文件
+.DS_Store
+Thumbs.db
+
+# 依赖缓存
+*.egg-info/
+.pytest_cache/
+.tox/
+
+# Node.js (如果使用)
+node_modules/
+package-lock.json
+yarn.lock
+
+# SSL 证书
+*.pem
+*.crt
+
+# 配置文件（敏感信息）
+config.py
+*.secret
+
+# Protocol Buffers 生成文件（如果从 proto 生成）
+# douyin_pb2.py  # 保留，因为是项目必需的
