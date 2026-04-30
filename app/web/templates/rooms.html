@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>房间管理 - 抖音弹幕监控</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f5f7fa; }
+        .header { background: linear-gradient(135deg, #ff6b6b, #ee5a9b); color: white; padding: 1rem 2rem; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .header h1 { font-size: 1.5rem; font-weight: 600; }
+        .nav { display: flex; gap: 1rem; margin-top: 0.5rem; }
+        .nav a { color: rgba(255,255,255,0.9); text-decoration: none; padding: 0.3rem 0.8rem; border-radius: 4px; transition: background 0.2s; }
+        .nav a:hover { background: rgba(255,255,255,0.2); }
+        .container { max-width: 1000px; margin: 2rem auto; padding: 0 1rem; }
+        .card { background: white; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); padding: 1.5rem; }
+        .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
+        .card-header h2 { font-size: 1.2rem; color: #333; }
+        .btn { background: linear-gradient(135deg, #ff6b6b, #ee5a9b); color: white; border: none; padding: 0.5rem 1rem; border-radius: 6px; cursor: pointer; font-size: 0.9rem; transition: transform 0.2s; }
+        .btn:hover { transform: translateY(-1px); }
+        .btn-sm { padding: 0.3rem 0.6rem; font-size: 0.8rem; }
+        .btn-danger { background: #ef4444; }
+        .btn-success { background: #10b981; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 0.8rem; text-align: left; border-bottom: 1px solid #eee; }
+        th { background: #f8f9fa; font-weight: 600; color: #666; }
+        .status-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+        .status-dot.online { background: #10b981; }
+        .status-dot.offline { background: #9ca3af; }
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); justify-content: center; align-items: center; z-index: 1000; }
+        .modal.show { display: flex; }
+        .modal-content { background: white; border-radius: 12px; padding: 2rem; width: 90%; max-width: 400px; }
+        .modal-content h3 { margin-bottom: 1rem; color: #333; }
+        .form-group { margin-bottom: 1rem; }
+        .form-group label { display: block; margin-bottom: 0.3rem; color: #666; font-size: 0.9rem; }
+        .form-group input { width: 100%; padding: 0.6rem; border: 1px solid #ddd; border-radius: 6px; font-size: 0.9rem; }
+        .modal-footer { display: flex; justify-content: flex-end; gap: 0.5rem; margin-top: 1.5rem; }
+        .empty { text-align: center; color: #999; padding: 3rem; }
+        
+        /* Toast 消息提示 */
+        .toast-container { position: fixed; top: 20px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 10px; }
+        .toast { display: flex; align-items: center; gap: 10px; padding: 12px 20px; border-radius: 8px; color: white; font-size: 14px; min-width: 240px; box-shadow: 0 4px 20px rgba(0,0,0,0.15); animation: slideIn 0.3s ease; }
+        .toast-success { background: linear-gradient(135deg, #10b981, #059669); }
+        .toast-error { background: linear-gradient(135deg, #ef4444, #dc2626); }
+        .toast-warning { background: linear-gradient(135deg, #f59e0b, #d97706); }
+        .toast-info { background: linear-gradient(135deg, #3b82f6, #2563eb); }
+        .toast-icon { font-size: 18px; }
+        .toast-close { margin-left: auto; cursor: pointer; opacity: 0.8; }
+        .toast-close:hover { opacity: 1; }
+        
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        
+        /* 确认对话框 */
+        .confirm-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); justify-content: center; align-items: center; z-index: 1001; }
+        .confirm-modal.show { display: flex; }
+        .confirm-content { background: white; border-radius: 12px; padding: 2rem; width: 90%; max-width: 360px; }
+        .confirm-content h4 { margin-bottom: 0.8rem; color: #333; font-size: 1.1rem; }
+        .confirm-content p { color: #666; margin-bottom: 1.5rem; }
+        .confirm-footer { display: flex; justify-content: flex-end; gap: 0.5rem; }
+        .confirm-btn-cancel { padding: 0.5rem 1.2rem; border: 1px solid #ddd; border-radius: 6px; background: white; cursor: pointer; color: #666; }
+        .confirm-btn-cancel:hover { background: #f9fafb; }
+        .confirm-btn-ok { padding: 0.5rem 1.2rem; border: none; border-radius: 6px; background: #ef4444; color: white; cursor: pointer; }
+        .confirm-btn-ok:hover { background: #dc2626; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🏠 房间管理</h1>
+        <div class="nav">
+            <a href="/">首页</a>
+            <a href="/rooms">房间管理</a>
+            <a href="/danmus">弹幕查看</a>
+            <a href="/stats">统计分析</a>
+        </div>
+    </div>
+    
+    <div class="container">
+        <div class="card">
+            <div class="card-header">
+                <h2>房间列表</h2>
+                <button class="btn" onclick="showAddModal()">添加房间</button>
+            </div>
+            
+            <div id="room-table-container">
+                <div class="empty">加载中...</div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 添加房间弹窗 -->
+    <div class="modal" id="add-modal">
+        <div class="modal-content">
+            <h3>添加监控房间</h3>
+            <div class="form-group">
+                <label>房间ID *</label>
+                <div style="display: flex; gap: 0.5rem;">
+                    <input type="text" id="room-id-input" placeholder="输入抖音房间ID" style="flex: 1;">
+                    <button class="btn btn-sm" style="background: #10b981; white-space: nowrap;" onclick="fetchRoomInfo()">获取信息</button>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>房间名称</label>
+                <input type="text" id="room-name-input" placeholder="输入房间名称">
+            </div>
+            <div class="form-group">
+                <label>主播名称</label>
+                <input type="text" id="host-name-input" placeholder="输入主播名称">
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-sm" style="background: #6b7280;" onclick="closeModal()">取消</button>
+                <button class="btn btn-sm btn-success" onclick="addRoom()">确认添加</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 编辑房间弹窗 -->
+    <div class="modal" id="edit-modal">
+        <div class="modal-content">
+            <h3>编辑房间信息</h3>
+            <input type="hidden" id="edit-room-id">
+            <div class="form-group">
+                <label>房间ID *</label>
+                <div style="display: flex; gap: 0.5rem;">
+                    <input type="text" id="edit-room-id-input" placeholder="输入抖音房间ID" readonly style="flex: 1;">
+                    <button class="btn btn-sm" style="background: #10b981; white-space: nowrap;" onclick="fetchRoomInfoEdit()">刷新信息</button>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>房间名称</label>
+                <input type="text" id="edit-room-name-input" placeholder="输入房间名称">
+            </div>
+            <div class="form-group">
+                <label>主播名称</label>
+                <input type="text" id="edit-host-name-input" placeholder="输入主播名称">
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-sm" style="background: #6b7280;" onclick="closeEditModal()">取消</button>
+                <button class="btn btn-sm btn-success" onclick="updateRoom()">确认修改</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Toast 容器 -->
+    <div class="toast-container" id="toast-container"></div>
+    
+    <!-- 确认对话框 -->
+    <div class="confirm-modal" id="confirm-modal">
+        <div class="confirm-content">
+            <h4 id="confirm-title">确认操作</h4>
+            <p id="confirm-message">确定要执行此操作吗？</p>
+            <div class="confirm-footer">
+                <button class="confirm-btn-cancel" onclick="closeConfirm()">取消</button>
+                <button class="confirm-btn-ok" onclick="executeConfirm()">确定</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let confirmCallback = null;
+        
+        // Toast 消息提示函数
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `toast toast-${type}`;
+            
+            const icons = {
+                success: '✓',
+                error: '✕',
+                warning: '⚠',
+                info: 'ℹ'
+            };
+            
+            toast.innerHTML = `
+                <span class="toast-icon">${icons[type] || icons.info}</span>
+                <span>${message}</span>
+                <span class="toast-close" onclick="this.parentElement.remove()">×</span>
+            `;
+            
+            container.appendChild(toast);
+            
+            setTimeout(() => {
+                if (toast.parentElement) {
+                    toast.style.animation = 'slideIn 0.3s ease reverse';
+                    setTimeout(() => toast.remove(), 300);
+                }
+            }, 3000);
+        }
+        
+        // 确认对话框
+        function showConfirm(title, message, callback) {
+            document.getElementById('confirm-title').textContent = title;
+            document.getElementById('confirm-message').textContent = message;
+            confirmCallback = callback;
+            document.getElementById('confirm-modal').classList.add('show');
+        }
+        
+        function closeConfirm() {
+            document.getElementById('confirm-modal').classList.remove('show');
+            confirmCallback = null;
+        }
+        
+        function executeConfirm() {
+            if (confirmCallback) {
+                confirmCallback();
+            }
+            closeConfirm();
+        }
+        
+        async function loadRooms() {
+            try {
+                const res = await fetch('/api/rooms');
+                const data = await res.json();
+                if (data.code === 200) {
+                    const rooms = data.data;
+                    const container = document.getElementById('room-table-container');
+                    
+                    if (rooms.length === 0) {
+                        container.innerHTML = '<div class="empty">暂无监控房间</div>';
+                    } else {
+                        container.innerHTML = `
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>房间ID</th>
+                                        <th>房间名称</th>
+                                        <th>主播</th>
+                                        <th>状态</th>
+                                        <th>创建时间</th>
+                                        <th>操作</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${rooms.map(room => `
+                                        <tr>
+                                            <td>${room.room_id}</td>
+                                            <td>${room.room_name || '-'}</td>
+                                            <td>${room.host_name || '-'}</td>
+                                            <td><span class="status-dot ${room.status === 1 ? 'online' : 'offline'}"></span> ${room.status === 1 ? '在线' : '离线'}</td>
+                                            <td>${formatTime(room.created_at)}</td>
+                                            <td>
+                                                <button class="btn btn-sm" style="background: #3b82f6;" onclick="editRoom('${room.room_id}')">编辑</button>
+                                                <button class="btn btn-sm" onclick="viewDanmu('${room.room_id}')">查看弹幕</button>
+                                                ${room.status === 1 ? `<button class="btn btn-sm btn-danger" onclick="stopListening('${room.room_id}')">停止监听</button>` : `<button class="btn btn-sm btn-success" onclick="startListening('${room.room_id}')">开始监听</button>`}
+                                                <button class="btn btn-sm btn-danger" onclick="confirmDelete('${room.room_id}')">删除</button>
+                                            </td>
+                                        </tr>
+                                    `).join('')}
+                                </tbody>
+                            </table>
+                        `;
+                    }
+                }
+            } catch (e) {
+                console.error('加载失败:', e);
+            }
+        }
+        
+        function formatTime(timeStr) {
+            if (!timeStr) return '-';
+            const date = new Date(timeStr);
+            return date.toLocaleString('zh-CN');
+        }
+        
+        function showAddModal() {
+            document.getElementById('add-modal').classList.add('show');
+        }
+        
+        async function fetchRoomInfo() {
+            const roomId = document.getElementById('room-id-input').value.trim();
+            
+            if (!roomId) {
+                showToast('请先输入房间ID', 'warning');
+                return;
+            }
+            
+            try {
+                const res = await fetch(`/api/v1/rooms/info/${roomId}`, {
+                    method: 'GET',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                const data = await res.json();
+                if (data.code === 200) {
+                    const room = data.data;
+                    if (room.room_name) {
+                        document.getElementById('room-name-input').value = room.room_name;
+                    }
+                    if (room.host_name) {
+                        document.getElementById('host-name-input').value = room.host_name;
+                    }
+                    showToast('房间信息获取成功！', 'success');
+                } else {
+                    showToast('获取房间信息失败: ' + data.message, 'error');
+                }
+            } catch (e) {
+                showToast('获取房间信息失败: ' + e.message, 'error');
+            }
+        }
+        
+        async function fetchRoomInfoEdit() {
+            const roomId = document.getElementById('edit-room-id-input').value.trim();
+            
+            if (!roomId) {
+                showToast('房间ID为空', 'warning');
+                return;
+            }
+            
+            try {
+                const res = await fetch(`/api/v1/rooms/info/${roomId}`, {
+                    method: 'GET',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                const data = await res.json();
+                if (data.code === 200) {
+                    const room = data.data;
+                    if (room.room_name) {
+                        document.getElementById('edit-room-name-input').value = room.room_name;
+                    }
+                    if (room.host_name) {
+                        document.getElementById('edit-host-name-input').value = room.host_name;
+                    }
+                    showToast('房间信息刷新成功！', 'success');
+                } else {
+                    showToast('刷新房间信息失败: ' + data.message, 'error');
+                }
+            } catch (e) {
+                showToast('刷新房间信息失败: ' + e.message, 'error');
+            }
+        }
+        
+        function closeModal() {
+            document.getElementById('add-modal').classList.remove('show');
+            document.getElementById('room-id-input').value = '';
+            document.getElementById('room-name-input').value = '';
+            document.getElementById('host-name-input').value = '';
+        }
+        
+        async function addRoom() {
+            const roomId = document.getElementById('room-id-input').value.trim();
+            const roomName = document.getElementById('room-name-input').value.trim();
+            const hostName = document.getElementById('host-name-input').value.trim();
+            
+            if (!roomId) {
+                showToast('请输入房间ID', 'warning');
+                return;
+            }
+            
+            try {
+                const res = await fetch('/api/v1/rooms', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ room_id: roomId, room_name: roomName, host_name: hostName })
+                });
+                const data = await res.json();
+                if (data.code === 201) {
+                    showToast('添加成功', 'success');
+                    closeModal();
+                    loadRooms();
+                } else {
+                    showToast(data.message, 'error');
+                }
+            } catch (e) {
+                showToast('添加失败', 'error');
+            }
+        }
+        
+        function viewDanmu(roomId) {
+            window.location.href = `/danmus/${roomId}`;
+        }
+        
+        function confirmDelete(roomId) {
+            showConfirm('删除房间', '确定要删除这个房间吗？此操作不可恢复。', () => deleteRoom(roomId));
+        }
+        
+        async function deleteRoom(roomId) {
+            try {
+                const res = await fetch(`/api/v1/rooms/${roomId}`, { method: 'DELETE' });
+                const data = await res.json();
+                if (data.code === 200) {
+                    showToast('删除成功', 'success');
+                    loadRooms();
+                } else {
+                    showToast(data.message, 'error');
+                }
+            } catch (e) {
+                showToast('删除失败', 'error');
+            }
+        }
+        
+        async function editRoom(roomId) {
+            try {
+                const res = await fetch(`/api/v1/rooms/${roomId}`, {
+                    method: 'GET',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                const data = await res.json();
+                if (data.code === 200) {
+                    const room = data.data;
+                    if (room && room.room_id) {
+                        document.getElementById('edit-room-id').value = room.room_id;
+                        document.getElementById('edit-room-id-input').value = room.room_id;
+                        document.getElementById('edit-room-name-input').value = room.room_name || '';
+                        document.getElementById('edit-host-name-input').value = room.host_name || '';
+                        document.getElementById('edit-modal').classList.add('show');
+                    } else {
+                        showToast('房间数据不完整', 'error');
+                    }
+                } else {
+                    showToast('获取房间信息失败: ' + data.message, 'error');
+                }
+            } catch (e) {
+                showToast('获取房间信息失败: ' + e.message, 'error');
+            }
+        }
+        
+        function closeEditModal() {
+            document.getElementById('edit-modal').classList.remove('show');
+            document.getElementById('edit-room-id').value = '';
+            document.getElementById('edit-room-id-input').value = '';
+            document.getElementById('edit-room-name-input').value = '';
+            document.getElementById('edit-host-name-input').value = '';
+        }
+        
+        async function updateRoom() {
+            const roomId = document.getElementById('edit-room-id').value;
+            const roomName = document.getElementById('edit-room-name-input').value.trim();
+            const hostName = document.getElementById('edit-host-name-input').value.trim();
+            
+            if (!roomId) {
+                showToast('房间ID不能为空', 'warning');
+                return;
+            }
+            
+            try {
+                const res = await fetch(`/api/v1/rooms/${roomId}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ room_name: roomName, host_name: hostName })
+                });
+                const data = await res.json();
+                if (data.code === 200) {
+                    showToast('修改成功', 'success');
+                    closeEditModal();
+                    loadRooms();
+                } else {
+                    showToast(data.message, 'error');
+                }
+            } catch (e) {
+                showToast('修改失败', 'error');
+            }
+        }
+        
+        async function startListening(roomId) {
+            try {
+                const res = await fetch(`/api/v1/rooms/${roomId}/start`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({})
+                });
+                const data = await res.json();
+                if (data.code === 200) {
+                    showToast('开始监听成功！', 'success');
+                    loadRooms();
+                } else {
+                    showToast('监听失败: ' + data.message, 'error');
+                }
+            } catch (e) {
+                showToast('监听失败: ' + e.message, 'error');
+            }
+        }
+        
+        async function stopListening(roomId) {
+            try {
+                const res = await fetch(`/api/v1/rooms/${roomId}/stop`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({})
+                });
+                const data = await res.json();
+                if (data.code === 200) {
+                    showToast('停止监听成功！', 'success');
+                    loadRooms();
+                } else {
+                    showToast('停止失败: ' + data.message, 'error');
+                }
+            } catch (e) {
+                showToast('停止失败: ' + e.message, 'error');
+            }
+        }
+        
+        loadRooms();
+    </script>
+</body>
+</html>
