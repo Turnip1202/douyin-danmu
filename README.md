@@ -1,93 +1,201 @@
-# 抖音弹幕监听工具
+<div align="center">
 
-一个基于 Python 的抖音直播弹幕监听工具，可以实时获取直播间的弹幕、点赞等消息。
+# 🎬 抖音弹幕监控系统
+
+![Python](https://img.shields.io/badge/Python-3.8+-blue.svg)
+![Flask](https://img.shields.io/badge/Flask-2.3+-green.svg)
+![WebSocket](https://img.shields.io/badge/WebSocket-Support-orange.svg)
+![License](https://img.shields.io/badge/License-MIT-yellow.svg)
+
+> 一个功能强大的抖音直播弹幕监控系统，支持实时监听、数据统计和可视化展示
+
+---
 
 ## ✨ 功能特性
 
-- ✅ 实时监听抖音直播弹幕
-- ✅ 支持获取点赞消息
-- ✅ 自动处理签名生成
-- ✅ 支持 Windows/Linux 系统
+| 功能 | 描述 | 状态 |
+|:---:|------|:---:|
+| 📡 **实时弹幕监听** | 实时获取直播间弹幕消息 | ✅ |
+| ❤️ **点赞统计** | 记录点赞消息并统计 | ✅ |
+| 📊 **数据分析** | 弹幕时段分布、活跃用户排行 | ✅ |
+| 🌐 **Web 界面** | 现代化的管理后台 | ✅ |
+| 🔍 **弹幕搜索** | 支持关键词搜索弹幕 | ✅ |
+| 🤖 **房间解析** | 自动获取房间信息 | ✅ |
 
-## 📦 环境要求
-
-| 软件 | 版本 | 说明 |
-|-----|-----|-----|
-| Python | ≥ 3.8 | 项目开发语言 |
-| Node.js | ≥ 14.0 | 执行 JavaScript 签名 |
+---
 
 ## 🚀 快速开始
 
-### 1. 安装依赖
+### 环境要求
 
 ```bash
-# 创建虚拟环境（推荐）
+Python >= 3.8
+Node.js >= 14.0
+```
+
+### 安装依赖
+
+```bash
+# 克隆项目
+git clone https://github.com/your-username/douyin-danmu.git
+cd douyin-danmu
+
+# 创建虚拟环境
 python -m venv venv
 
 # 激活虚拟环境
 # Windows PowerShell
 .\venv\Scripts\Activate.ps1
+# Linux/Mac
+source venv/bin/activate
 
 # 安装依赖
 pip install -r requirements.txt
 ```
 
-### 2. 运行项目
+### 启动服务
 
 ```bash
-# 修改直播间 URL（在 main.py 中）
-# url = "https://live.douyin.com/你的直播间ID"
-
-# 运行主程序
-python main.py
+# 运行服务
+python run.py
 ```
 
-### 3. 配置说明
+访问地址: http://localhost:5000
 
-在 `main.py` 中修改直播间地址：
+---
 
-```python
-url = "https://live.douyin.com/858408884422"
-```
+## 📷 界面预览
+
+### 首页仪表盘
+![首页预览](https://via.placeholder.com/800x400?text=首页仪表盘预览)
+
+### 弹幕实时监控
+![弹幕监控](https://via.placeholder.com/800x400?text=弹幕实时监控预览)
+
+### 统计分析
+![统计分析](https://via.placeholder.com/800x400?text=统计分析预览)
+
+---
 
 ## 📁 项目结构
 
 ```
-├── main.py           # 主程序入口
-├── douyin_pb2.py     # Protocol Buffers 数据结构
-├── douyin.proto      # Proto 定义文件
-├── sign.js           # 签名算法（混淆代码）
-├── danmu.js          # 签名接口封装
-├── env.js            # 浏览器环境模拟
-├── requirements.txt  # 依赖清单
-├── README.md         # 项目说明
-└── venv/             # Python 虚拟环境（自动生成）
+douyin-danmu/
+├── app/                    # 应用主目录
+│   ├── api/                # REST API 接口
+│   │   └── v1/             # API 版本 1
+│   │       ├── room_api.py      # 房间管理接口
+│   │       ├── danmu_api.py     # 弹幕数据接口
+│   │       └── stats_api.py     # 统计分析接口
+│   ├── services/           # 业务逻辑层
+│   │   ├── danmu_service.py     # 弹幕监听服务
+│   │   ├── room_info_parser.py  # 房间信息解析器
+│   │   └── signature_service.py # 签名服务
+│   ├── repositories/       # 数据访问层
+│   ├── web/                # Web 前端
+│   │   └── templates/      # HTML 模板
+│   ├── config/             # 配置文件
+│   └── utils/              # 工具函数
+├── data/                   # 数据库文件
+├── tests/                  # 测试文件
+├── requirements.txt        # 依赖清单
+└── run.py                  # 启动脚本
 ```
 
-## 📝 核心功能
+---
 
-### 弹幕监听
+## 🛠️ 技术栈
 
-监听直播间实时弹幕消息，包括：
-- 用户弹幕内容
-- 点赞消息
-- 其他互动消息
+| 分类 | 技术 | 说明 |
+|:---:|------|------|
+| **后端框架** | Flask | 轻量级 Python Web 框架 |
+| **数据库** | SQLite | 嵌入式数据库，无需额外部署 |
+| **WebSocket** | websocket-client | WebSocket 客户端库 |
+| **签名生成** | PyExecJS + Node.js | 执行 JavaScript 签名算法 |
+| **页面解析** | Playwright | 动态页面渲染解析 |
+| **协议解析** | Protocol Buffers | 抖音数据协议解析 |
 
-### 签名生成
+---
 
-自动生成抖音 API 请求所需的签名，无需手动配置。
+## 🔧 API 接口
+
+### 房间管理
+
+| 接口 | 方法 | 描述 |
+|------|------|------|
+| `/api/v1/rooms` | GET | 获取房间列表 |
+| `/api/v1/rooms` | POST | 添加新房间 |
+| `/api/v1/rooms/{id}` | GET | 获取房间详情 |
+| `/api/v1/rooms/{id}` | PUT | 更新房间信息 |
+| `/api/v1/rooms/{id}` | DELETE | 删除房间 |
+| `/api/v1/rooms/{id}/start` | POST | 开始监听 |
+| `/api/v1/rooms/{id}/stop` | POST | 停止监听 |
+| `/api/v1/rooms/info/{room_id}` | GET | 获取抖音房间信息 |
+
+### 弹幕数据
+
+| 接口 | 方法 | 描述 |
+|------|------|------|
+| `/api/v1/danmus/{room_id}` | GET | 获取弹幕列表 |
+
+### 统计分析
+
+| 接口 | 方法 | 描述 |
+|------|------|------|
+| `/api/v1/stats/danmu/{room_id}` | GET | 弹幕统计 |
+| `/api/v1/stats/like/{room_id}` | GET | 点赞统计 |
+
+---
+
+## 📝 使用示例
+
+### 添加监控房间
+
+```bash
+curl -X POST http://localhost:5000/api/v1/rooms \
+  -H "Content-Type: application/json" \
+  -d '{"room_id": "966861199494", "room_name": "麦小兜的直播间", "host_name": "麦小兜"}'
+```
+
+### 开始监听弹幕
+
+```bash
+curl -X POST http://localhost:5000/api/v1/rooms/966861199494/start \
+  -H "Content-Type: application/json"
+```
+
+### 获取弹幕列表
+
+```bash
+curl http://localhost:5000/api/v1/danmus/966861199494?page=1&limit=50
+```
+
+---
+
+## 📊 数据统计
+
+系统提供以下统计功能：
+
+1. **弹幕活跃用户 TOP10** - 按弹幕数量排序
+2. **点赞活跃用户 TOP10** - 按点赞数量排序
+3. **弹幕时段分布** - 24小时弹幕分布柱状图
+
+---
 
 ## ⚠️ 注意事项
 
-1. **网络环境**：需要可以访问抖音服务器的网络环境
+1. **网络环境**：需要可以正常访问抖音服务器的网络
 2. **Node.js**：必须安装 Node.js 才能生成签名
 3. **直播间状态**：只能监听正在直播的房间
 4. **合规使用**：请遵守抖音平台规则，合理使用本工具
+5. **Playwright**：首次运行会自动下载浏览器
+
+---
 
 ## 🐛 常见问题
 
-### Q: 运行时提示 "ModuleNotFoundError: google"
-**A:** 缺少 protobuf 库，执行 `pip install protobuf`
+### Q: 运行时提示 "ModuleNotFoundError"
+**A:** 请确保已激活虚拟环境并安装依赖
 
 ### Q: 签名生成失败
 **A:** 请确保已安装 Node.js，并且版本 ≥ 14.0
@@ -95,10 +203,37 @@ url = "https://live.douyin.com/858408884422"
 ### Q: WebSocket 连接失败（400 Bad Request）
 **A:** 可能是直播间 ID 不正确或签名过期，请检查直播间 URL
 
+### Q: 房间信息获取失败
+**A:** 请确保已安装 Playwright：`pip install playwright && playwright install chromium`
+
+---
+
+## 🤝 贡献指南
+
+欢迎提交 Issue 和 PR！
+
+### 开发流程
+
+1. Fork 项目
+2. 创建功能分支 (`git checkout -b feature/xxx`)
+3. 提交代码 (`git commit -m 'Add xxx'`)
+4. 推送到分支 (`git push origin feature/xxx`)
+5. 创建 Pull Request
+
+---
+
 ## 📄 许可证
 
 MIT License
 
+---
+
 ## 📧 联系方式
 
-如有问题或建议，请提交 Issue 或 PR。
+如有问题或建议，请提交 Issue 或发送邮件。
+
+---
+
+⭐ 如果这个项目对你有帮助，请给个 Star！
+
+</div>
