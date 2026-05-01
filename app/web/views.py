@@ -80,9 +80,19 @@ def api_danmus(room_id):
         page = int(request.args.get('page', 1))
         limit = int(request.args.get('limit', 50))
         offset = (page - 1) * limit
+        keyword = request.args.get('keyword', '').strip()
         
-        danmus = repo.get_by_room(room_id, limit=limit, offset=offset)
-        total = repo.count_by_room(room_id)
+        if keyword:
+            # 按关键词搜索
+            danmus = repo.search_by_keyword(room_id, keyword)
+            total = len(danmus)
+            # 手动分页
+            danmus = danmus[offset:offset + limit]
+        else:
+            # 普通分页查询
+            danmus = repo.get_by_room(room_id, limit=limit, offset=offset)
+            total = repo.count_by_room(room_id)
+        
         result = [d.to_dict() for d in danmus]
         
         return jsonify({
