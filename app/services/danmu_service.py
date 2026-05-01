@@ -287,6 +287,15 @@ class DanmuService:
                     like_message = LikeMessage()
                     like_message.ParseFromString(item.payload)
                     self.logger.info(f"点赞: {like_message.user.nickName}给主播点了 {like_message.count} 次赞")
+
+                    # 保存点赞到数据库
+                    self.message_processor.save_like(
+                        room_id=self.short_room_id,
+                        user_id=str(like_message.user.id),
+                        user_name=like_message.user.nickName,
+                        count=like_message.count,
+                        timestamp=datetime.now()
+                    )
             
         except Exception as e:
             self.logger.error(f"消息处理失败: {e}", exc_info=True)

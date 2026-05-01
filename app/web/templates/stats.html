@@ -12,11 +12,17 @@
         .nav { display: flex; gap: 1rem; margin-top: 0.5rem; }
         .nav a { color: rgba(255,255,255,0.9); text-decoration: none; padding: 0.3rem 0.8rem; border-radius: 4px; transition: background 0.2s; }
         .nav a:hover { background: rgba(255,255,255,0.2); }
-        .container { max-width: 1000px; margin: 2rem auto; padding: 0 1rem; }
+        .container { max-width: 1200px; margin: 2rem auto; padding: 0 1rem; }
+        .room-selector { background: white; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); padding: 1.5rem; margin-bottom: 1.5rem; }
+        .room-selector select { padding: 0.6rem 1rem; border: 1px solid #ddd; border-radius: 6px; font-size: 0.9rem; min-width: 250px; }
+        .room-selector label { font-weight: 500; margin-right: 0.5rem; }
         .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 1.5rem; }
         .card { background: white; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); padding: 1.5rem; }
         .card-title { font-size: 0.9rem; color: #666; margin-bottom: 0.5rem; }
         .card-value { font-size: 2rem; font-weight: 700; color: #333; }
+        .card-value.danmu { color: #3b82f6; }
+        .card-value.like { color: #ff6b6b; }
+        .card-value.user { color: #10b981; }
         .section { background: white; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); padding: 1.5rem; margin-bottom: 1.5rem; }
         .section-title { font-size: 1.1rem; font-weight: 600; color: #333; margin-bottom: 1rem; }
         .ranking-list { list-style: none; }
@@ -34,7 +40,19 @@
         .bar { width: 100%; background: linear-gradient(180deg, #ff6b6b, #ee5a9b); border-radius: 4px 4px 0 0; min-height: 4px; }
         .bar-label { font-size: 0.75rem; color: #999; margin-top: 0.5rem; }
         .bar-value { font-size: 0.75rem; color: #666; font-weight: 500; margin-bottom: 0.3rem; }
-        
+        .rooms-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 1rem; }
+        .room-card { border: 1px solid #eee; border-radius: 8px; padding: 1rem; }
+        .room-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.8rem; padding-bottom: 0.8rem; border-bottom: 1px solid #f0f0f0; }
+        .room-card-title { font-weight: 600; color: #333; }
+        .room-card-title span { font-size: 0.85rem; color: #999; font-weight: normal; }
+        .room-card-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; margin-bottom: 0.8rem; }
+        .room-stat { text-align: center; padding: 0.5rem; background: #f9fafb; border-radius: 4px; }
+        .room-stat-value { font-size: 1.2rem; font-weight: 600; color: #333; }
+        .room-stat-label { font-size: 0.75rem; color: #999; }
+        .room-hot { font-size: 0.85rem; }
+        .room-hot-item { display: flex; justify-content: space-between; padding: 0.3rem 0; color: #666; }
+        .room-hot-count { color: #ff6b6b; font-weight: 500; }
+
         /* Toast 消息提示 */
         .toast-container { position: fixed; top: 20px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 10px; }
         .toast { display: flex; align-items: center; gap: 10px; padding: 12px 20px; border-radius: 8px; color: white; font-size: 14px; min-width: 240px; box-shadow: 0 4px 20px rgba(0,0,0,0.15); animation: slideIn 0.3s ease; }
@@ -45,7 +63,7 @@
         .toast-icon { font-size: 18px; }
         .toast-close { margin-left: auto; cursor: pointer; opacity: 0.8; }
         .toast-close:hover { opacity: 1; }
-        
+
         @keyframes slideIn {
             from { transform: translateX(100%); opacity: 0; }
             to { transform: translateX(0); opacity: 1; }
@@ -62,72 +80,89 @@
             <a href="/stats">统计分析</a>
         </div>
     </div>
-    
+
     <div class="container">
+        <div class="room-selector">
+            <label>选择直播间：</label>
+            <select id="room-select" onchange="loadStats()">
+                <option value="all">📊 全部汇总</option>
+            </select>
+        </div>
+
         <div class="cards">
             <div class="card">
                 <div class="card-title">弹幕总数</div>
-                <div class="card-value" id="total-danmus">0</div>
+                <div class="card-value danmu" id="total-danmus">0</div>
             </div>
             <div class="card">
                 <div class="card-title">点赞总数</div>
-                <div class="card-value" id="total-likes">0</div>
+                <div class="card-value like" id="total-likes">0</div>
             </div>
             <div class="card">
                 <div class="card-title">活跃用户</div>
-                <div class="card-value" id="active-users">0</div>
+                <div class="card-value user" id="active-users">0</div>
             </div>
         </div>
-        
-        <div class="section">
-            <div class="section-title">🔥 弹幕活跃用户 TOP10</div>
-            <ul class="ranking-list" id="danmu-ranking">
-                <li style="text-align: center; color: #999; padding: 1rem;">加载中...</li>
-            </ul>
-        </div>
-        
-        <div class="section">
-            <div class="section-title">💖 点赞活跃用户 TOP10</div>
-            <ul class="ranking-list" id="like-ranking">
-                <li style="text-align: center; color: #999; padding: 1rem;">加载中...</li>
-            </ul>
-        </div>
-        
-        <div class="section">
-            <div class="section-title">📈 弹幕时段分布</div>
-            <div class="chart-container">
-                <div class="chart-bar" id="hour-chart">
+
+        <div id="all-rooms-section">
+            <div class="section">
+                <div class="section-title">🏠 各直播间统计</div>
+                <div class="rooms-grid" id="rooms-grid">
                     <div style="text-align: center; color: #999; padding: 2rem;">加载中...</div>
                 </div>
             </div>
         </div>
+
+        <div id="single-room-section" style="display: none;">
+            <div class="section">
+                <div class="section-title">🔥 弹幕活跃用户 TOP10</div>
+                <ul class="ranking-list" id="danmu-ranking">
+                    <li style="text-align: center; color: #999; padding: 1rem;">加载中...</li>
+                </ul>
+            </div>
+
+            <div class="section">
+                <div class="section-title">💖 点赞活跃用户 TOP10</div>
+                <ul class="ranking-list" id="like-ranking">
+                    <li style="text-align: center; color: #999; padding: 1rem;">加载中...</li>
+                </ul>
+            </div>
+
+            <div class="section">
+                <div class="section-title">📈 弹幕时段分布</div>
+                <div class="chart-container">
+                    <div class="chart-bar" id="hour-chart">
+                        <div style="text-align: center; color: #999; padding: 2rem;">加载中...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
-    
+
     <!-- Toast 容器 -->
     <div class="toast-container" id="toast-container"></div>
 
     <script>
-        // Toast 消息提示函数
         function showToast(message, type = 'info') {
             const container = document.getElementById('toast-container');
             const toast = document.createElement('div');
             toast.className = `toast toast-${type}`;
-            
+
             const icons = {
                 success: '✓',
                 error: '✕',
                 warning: '⚠',
                 info: 'ℹ'
             };
-            
+
             toast.innerHTML = `
                 <span class="toast-icon">${icons[type] || icons.info}</span>
                 <span>${message}</span>
                 <span class="toast-close" onclick="this.parentElement.remove()">×</span>
             `;
-            
+
             container.appendChild(toast);
-            
+
             setTimeout(() => {
                 if (toast.parentElement) {
                     toast.style.animation = 'slideIn 0.3s ease reverse';
@@ -135,47 +170,154 @@
                 }
             }, 3000);
         }
-        
-        async function loadStats() {
-            const roomId = '{{ room_id }}';
-            
+
+        async function loadRooms() {
             try {
-                // 获取弹幕统计
-                const danmuRes = await fetch(`/api/v1/stats/danmu/${roomId}`);
-                const danmuData = await danmuRes.json();
-                
-                if (danmuData.code === 200) {
-                    document.getElementById('total-danmus').textContent = danmuData.data.total_danmus;
-                    renderRanking('danmu-ranking', danmuData.data.hot_users);
-                    renderChart('hour-chart', danmuData.data.hourly_stats);
+                const res = await fetch('/api/rooms');
+                const data = await res.json();
+                if (data.code === 200) {
+                    const select = document.getElementById('room-select');
+                    data.data.forEach(room => {
+                        const option = document.createElement('option');
+                        option.value = room.room_id;
+                        option.textContent = `${room.room_name || room.room_id} - ${room.host_name || '-'}`;
+                        select.appendChild(option);
+                    });
                 }
-                
-                // 获取点赞统计
-                const likeRes = await fetch(`/api/v1/stats/like/${roomId}`);
-                const likeData = await likeRes.json();
-                
-                if (likeData.code === 200) {
-                    document.getElementById('total-likes').textContent = likeData.data.total_likes;
-                    renderRanking('like-ranking', likeData.data.hot_users);
+            } catch (e) {
+                console.error('加载房间失败:', e);
+            }
+        }
+
+        async function loadStats() {
+            const roomId = document.getElementById('room-select').value;
+
+            try {
+                if (roomId === 'all') {
+                    await loadAllStats();
+                } else {
+                    await loadSingleRoomStats(roomId);
                 }
-                
-                // 更新活跃用户数
-                const danmuUsers = danmuData.code === 200 ? danmuData.data.hot_users.length : 0;
-                document.getElementById('active-users').textContent = danmuUsers;
-                
             } catch (e) {
                 console.error('加载统计失败:', e);
                 showToast('加载统计数据失败', 'error');
             }
         }
-        
+
+        async function loadAllStats() {
+            document.getElementById('all-rooms-section').style.display = 'block';
+            document.getElementById('single-room-section').style.display = 'none';
+
+            try {
+                const res = await fetch('/api/v1/stats/rooms');
+                const data = await res.json();
+
+                if (data.code === 200) {
+                    let totalDanmu = 0;
+                    let totalLike = 0;
+
+                    const grid = document.getElementById('rooms-grid');
+                    if (!data.data || data.data.length === 0) {
+                        grid.innerHTML = '<div style="text-align: center; color: #999; padding: 2rem;">暂无数据</div>';
+                    } else {
+                        grid.innerHTML = data.data.map(room => {
+                            totalDanmu += room.danmu_count || 0;
+                            totalLike += room.like_count || 0;
+
+                            const topDanmu = room.danmu_hot_users || [];
+                            const topLike = room.like_hot_users || [];
+
+                            return `
+                                <div class="room-card">
+                                    <div class="room-card-header">
+                                        <span class="room-card-title">
+                                            ${room.room_name || room.room_id}
+                                            <span>by ${room.host_name || '-'}</span>
+                                        </span>
+                                    </div>
+                                    <div class="room-card-stats">
+                                        <div class="room-stat">
+                                            <div class="room-stat-value">${room.danmu_count || 0}</div>
+                                            <div class="room-stat-label">弹幕数</div>
+                                        </div>
+                                        <div class="room-stat">
+                                            <div class="room-stat-value">${room.like_count || 0}</div>
+                                            <div class="room-stat-label">点赞数</div>
+                                        </div>
+                                    </div>
+                                    <div class="room-hot">
+                                        <div style="font-weight: 500; margin-bottom: 0.3rem; color: #666;">弹幕TOP3</div>
+                                        ${topDanmu.length > 0 ? topDanmu.map(u => `
+                                            <div class="room-hot-item">
+                                                <span>${u.user_name}</span>
+                                                <span class="room-hot-count">${u.count}</span>
+                                            </div>
+                                        `).join('') : '<div style="color: #999; font-size: 0.85rem;">暂无</div>'}
+                                    </div>
+                                    <div class="room-hot" style="margin-top: 0.8rem;">
+                                        <div style="font-weight: 500; margin-bottom: 0.3rem; color: #666;">点赞TOP3</div>
+                                        ${topLike.length > 0 ? topLike.map(u => `
+                                            <div class="room-hot-item">
+                                                <span>${u.user_name}</span>
+                                                <span class="room-hot-count">${u.count}</span>
+                                            </div>
+                                        `).join('') : '<div style="color: #999; font-size: 0.85rem;">暂无</div>'}
+                                    </div>
+                                </div>
+                            `;
+                        }).join('');
+                    }
+
+                    document.getElementById('total-danmus').textContent = totalDanmu;
+                    document.getElementById('total-likes').textContent = totalLike;
+                    document.getElementById('active-users').textContent = data.data.length;
+                }
+            } catch (e) {
+                console.error('加载全部统计失败:', e);
+                showToast('加载统计数据失败', 'error');
+            }
+        }
+
+        async function loadSingleRoomStats(roomId) {
+            document.getElementById('all-rooms-section').style.display = 'none';
+            document.getElementById('single-room-section').style.display = 'block';
+
+            try {
+                const [danmuRes, likeRes] = await Promise.all([
+                    fetch(`/api/v1/stats/danmu/${roomId}`),
+                    fetch(`/api/v1/stats/like/${roomId}`)
+                ]);
+
+                const danmuData = await danmuRes.json();
+                const likeData = await likeRes.json();
+
+                if (danmuData.code === 200) {
+                    document.getElementById('total-danmus').textContent = danmuData.data.total_danmus;
+                    renderRanking('danmu-ranking', danmuData.data.hot_users);
+                    renderChart('hour-chart', danmuData.data.hourly_stats);
+                }
+
+                if (likeData.code === 200) {
+                    document.getElementById('total-likes').textContent = likeData.data.total_likes;
+                    renderRanking('like-ranking', likeData.data.hot_users);
+                }
+
+                const danmuUsers = danmuData.code === 200 ? danmuData.data.hot_users.length : 0;
+                document.getElementById('active-users').textContent = danmuUsers;
+
+            } catch (e) {
+                console.error('加载单房间统计失败:', e);
+                showToast('加载统计数据失败', 'error');
+            }
+        }
+
         function renderRanking(containerId, users) {
             const container = document.getElementById(containerId);
             if (!users || users.length === 0) {
                 container.innerHTML = '<li style="text-align: center; color: #999; padding: 1rem;">暂无数据</li>';
                 return;
             }
-            
+
             container.innerHTML = users.map((user, index) => `
                 <li class="ranking-item">
                     <span class="ranking-rank ${index < 3 ? `top${index + 1}` : ''}">${index + 1}</span>
@@ -184,16 +326,16 @@
                 </li>
             `).join('');
         }
-        
+
         function renderChart(containerId, hourlyStats) {
             const container = document.getElementById(containerId);
             if (!hourlyStats || hourlyStats.length === 0) {
                 container.innerHTML = '<div style="text-align: center; color: #999; padding: 2rem;">暂无数据</div>';
                 return;
             }
-            
+
             const maxCount = Math.max(...hourlyStats.map(h => h.count));
-            
+
             container.innerHTML = hourlyStats.map(h => {
                 const height = maxCount > 0 ? `${(h.count / maxCount) * 100}%` : '4px';
                 return `
@@ -205,8 +347,8 @@
                 `;
             }).join('');
         }
-        
-        loadStats();
+
+        loadRooms().then(() => loadStats());
     </script>
 </body>
 </html>
